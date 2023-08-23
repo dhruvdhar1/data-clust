@@ -95,5 +95,42 @@ plt.title('Clustered Data')
 plt.xlabel('X')
 plt.ylabel('Y')
 ```
-This is how the clustered data looks after running DBScan
+This is how the clustered data looks after running DBScan \
 ![alt text](./res/dbscan-circles.png)
+
+### Hierarchical clustering
+The below code block demonstrates usage using a custom dataset:
+```python
+data_moons = pd.read_csv(r'data/moons.csv')
+df_moons = pd.DataFrame(data_moons, columns=['Xmoons_X1', 'Xmoons_X2'])
+df_moons.rename(columns={'Xmoons_X1': 'x', 'Xmoons_X2':'y'}, inplace = True)
+
+#Perform clustering
+raw_moons_data = df_moons.to_numpy()
+d = hierarchical_clust(raw_moons_data,2)
+
+# Visualize on a scatter plot
+cluster1 = d[3]
+cluster2 = d[2] - cluster1
+cluster1_x = []
+cluster1_y = []
+cluster2_x = []
+cluster2_y = []
+
+for point in cluster1:
+    cluster1_x.append(x[point])
+for point in cluster1:
+    cluster1_y.append(y[point])
+
+plt.scatter(cluster1_x, cluster1_y)
+
+for point in cluster2:
+    cluster2_x.append(x[point])
+for point in cluster2:
+    cluster2_y.append(y[point])
+
+plt.scatter(cluster2_x, cluster2_y)
+plt.show()
+```
+This is how the clustered data looks after running Hierarchical clustering \
+![alt text](./res/hc-moon.png)

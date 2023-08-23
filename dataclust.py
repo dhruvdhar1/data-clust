@@ -156,3 +156,70 @@ class GaussianMixtureModel:
                 bias=True)
             self.mean[i] = (X * weight).sum(axis=0) / total_weight
             
+
+def euclidean_distances(X):
+    euclidean_distance_mat = np.zeros((len(X), len(X)))
+
+    for i in range(len(X)):
+        for j in range(len(X)):
+            euclidean_distance = np.linalg.norm(X[i] - X[j])
+            euclidean_distance_mat[i][j] = euclidean_distance
+    return euclidean_distance_mat
+
+def expand_cluster(point1, point2, m, clusters):
+    expanded_list = set()
+    cluster_value_set = set()
+    for key in clusters:
+        clust_values = clusters[key]
+        cluster_value_set = cluster_value_set.union(clust_values)
+
+    if point1 not in cluster_value_set and point2 not in cluster_value_set:
+        expanded_list.add(point1)
+        expanded_list.add(point2)
+    else:
+        for key in clusters:
+            clust_values = clusters[key]
+            if point1 in clust_values:
+                expanded_list = expanded_list.union(clust_values)
+            else:
+                expanded_list.add(point1)
+            if point2 in clust_values:
+                expanded_list = expanded_list.union(clust_values)
+            else:
+                expanded_list.add(point2)
+    clusters[m] = expanded_list
+
+def hierarchical_clust(X, k):
+    clusters = dict()
+    #Step-1: calculate euclidean distances, replace all zero with inf for ease
+    euclidean_distances_mat = euclidean_distances(X)
+    euclidean_distances_mat = np.tril(euclidean_distances_mat)
+    euclidean_distances_mat[euclidean_distances_mat == 0] = np.inf
+
+    m = euclidean_distances_mat.shape[0]
+    num_points = euclidean_distances_mat.shape[0]
+
+    #Step-2: run a while loop until all no non-inf distance is present in the dist_mat
+    while m > 0: 
+        min_ind = np.unravel_index(euclidean_distances_mat.argmin(), euclidean_distances_mat.shape)
+        # min_ind will be in the form (x,y) -> we process along x
+        
+        x = min_ind[0]
+        y = min_ind[1]
+
+        expand_cluster(x, y, m, clusters)
+
+        m -= 1
+
+        for i in range(0, num_points):
+            if i != x and i != y:
+                dist_x_i = euclidean_distances_mat[x][i] if euclidean_distances_mat[x][i] != np.inf else euclidean_distances_mat[i][x]
+                dist_y_i = euclidean_distances_mat[y][i] if euclidean_distances_mat[y][i] != np.inf else euclidean_distances_mat[i][y]
+                min_val_between_points = max(dist_x_i, dist_y_i)
+                min_val_between_points = dist_x_i
+                euclidean_distances_mat[x][i] = min_val_between_points
+
+        #Step-3: Set y rows and col in distance_mat to infifity to avoid recomputation
+        euclidean_distances_mat[y] = np.inf
+        euclidean_distances_mat[:,y] = np.inf
+    return clusters
