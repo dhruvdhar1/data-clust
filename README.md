@@ -15,3 +15,27 @@ This GitHub repository is a go-to resource for a collection of open-source unsup
 - 2d Gaussian Sampling
 - Gibbs Sampling
 - Latent Dirichlet allocation (LDA)
+
+## Usage
+
+### KMeans
+
+The below code block demonstrates usage using the MNIST dataset
+
+```python
+from keras.datasets import mnist
+import numpy as np
+from dataclust import kmeans
+
+(trainX, trainY), (testX, testY) = keras.datasets.mnist.load_data()
+
+#reshaping images
+trainX = np.reshape(trainX, (-1, 784))
+testX = np.reshape(testX, (-1, 784))
+
+# normalize
+trainX = trainX.astype('float32') / 255
+testX = testX.astype('float32') / 255
+
+labels, centroids = kmeans(trainX, 10)
+```
