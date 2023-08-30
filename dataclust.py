@@ -195,7 +195,6 @@ def hierarchical_clust(X, k):
     euclidean_distances_mat = euclidean_distances(X)
     euclidean_distances_mat = np.tril(euclidean_distances_mat)
     euclidean_distances_mat[euclidean_distances_mat == 0] = np.inf
-
     m = euclidean_distances_mat.shape[0]
     num_points = euclidean_distances_mat.shape[0]
 
@@ -223,3 +222,83 @@ def hierarchical_clust(X, k):
         euclidean_distances_mat[y] = np.inf
         euclidean_distances_mat[:,y] = np.inf
     return clusters
+
+class PCA:
+    """
+    Principal Component Analysis Implementation for dimentionality reduction
+
+    Parameters
+    ----------
+    num_components: The number of dimentions to reduce the data to
+    """
+    def __init__(self, num_components):
+        self.num_components = num_components
+        self.components = None
+        self.mean = None
+
+    def fit(self, X):
+        """
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training instances to cluster. It must be noted that the data
+            will be converted to C ordering, which will cause a memory
+            copy if the given data is not C-contiguous.
+            If a sparse matrix is passed, a copy will be made if it's not in
+            CSR format.
+        """
+        self.mean = np.mean(X, axis=0)
+        X = X - self.mean
+
+        cov_mat = np.dot(X.T, X) / (X.shape[0] - 1)
+        eigenvalues, eigenvectors = np.linalg.eigh(cov_mat)
+
+        eigenvectors = eigenvectors.T
+        
+        arg_ind = np.argsort(eigenvalues)[::-1]
+        eigenvalues = eigenvalues[arg_ind]
+        eigenvectors = eigenvectors[arg_ind]
+
+        self.components = eigenvectors[:self.num_components]
+         
+    def transform(self, X):
+        X = X - self.mean
+        return np.dot(X, self.components.T)
+    
+def kernelPCA(X):
+    """
+    Kernel-PCA implementation.
+
+    Parameters
+    ----------
+    X : {array-like, sparse matrix} of shape (n_samples, n_features)
+        Training instances to cluster. It must be noted that the data
+        will be converted to C ordering, which will cause a memory
+        copy if the given data is not C-contiguous.
+        If a sparse matrix is passed, a copy will be made if it's not in
+        CSR format.
+
+    Returns: Applies k-PCA and returns data in 3, 20 and 100 dimentions by default 
+    """
+    euclidean_distance_mat = euclidean_distances(X)
+
+    sigma = 3
+    K = np.exp(-euclidean_distance_mat / sigma)
+
+    N = K.shape[0]
+
+    U = np.ones((N, N)) / N
+    Kn = K - np.dot(U, K) - np.dot(K, U) + np.dot(np.dot(U, K), U)
+
+    D, V = np.linalg.eigh(Kn)
+    sorteig = np.argsort(D)[::-1]
+    D = D[sorteig]
+    V = V[:, sorteig]
+
+    XG = np.dot(Kn, V.T)
+
+    X3G = XG[:, :3]
+    X20G = XG[:, :20]
+    X100G = XG[:, :100]
+    
+    return X3G,X20G,X100G

@@ -101,6 +101,11 @@ This is how the clustered data looks after running DBScan \
 ### Hierarchical clustering
 The below code block demonstrates usage using a custom dataset:
 ```python
+import numpy as np
+import pandas as pd
+from dataclust import hierarchical_clust
+import matplotlib.pyplot as plt
+
 data_moons = pd.read_csv(r'data/moons.csv')
 df_moons = pd.DataFrame(data_moons, columns=['Xmoons_X1', 'Xmoons_X2'])
 df_moons.rename(columns={'Xmoons_X1': 'x', 'Xmoons_X2':'y'}, inplace = True)
@@ -133,4 +138,59 @@ plt.scatter(cluster2_x, cluster2_y)
 plt.show()
 ```
 This is how the clustered data looks after running Hierarchical clustering \
-![alt text](./res/hc-moon.png)
+![alt text](./res/hc-moon.png) 
+
+
+
+### PCA
+The below code block demonstrates usage of PCA on mnist dataset
+```python
+from keras.datasets import mnist
+import numpy as np
+from dataclust import PCA
+
+(trainX, trainY), (testX, testY) = keras.datasets.mnist.load_data()
+
+#reshaping images
+trainX = np.reshape(trainX, (-1, 784))
+testX = np.reshape(testX, (-1, 784))
+
+# normalize
+trainX = trainX.astype('float32') / 255
+testX = testX.astype('float32') / 255
+
+#Run PCA
+pca = PCA(5)
+pca.fit(trainX)
+projection_train_mnist = pca.transform(trainX)
+projection_test_mnist = pca.transform(testX)
+
+#test accuracy
+
+```
+
+
+
+### k-PCA
+The below code block demonstrates usage of k-PCA on mnist dataset
+```python
+from keras.datasets import mnist
+import numpy as np
+from dataclust import kernelPCA
+
+(trainX, trainY), (testX, testY) = keras.datasets.mnist.load_data()
+
+#reshaping images
+trainX = np.reshape(trainX, (-1, 784))
+testX = np.reshape(testX, (-1, 784))
+
+# normalize
+trainX = trainX.astype('float32') / 255
+testX = testX.astype('float32') / 255
+
+#Run kernal PCA
+X3G,X20G,X100G = kernelPCA(trainX)
+
+#test accuracy
+
+```
